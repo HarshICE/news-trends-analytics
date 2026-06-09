@@ -33,17 +33,28 @@ RSS_FEEDS = [
 
 def save_article(article):
     try:
-        supabase.table("articles").insert(article).execute()
+        result = supabase.table("articles").insert(article).execute()
         print(f"Saved: {article['title']}")
-    except Exception:
-        # Usually duplicate link
-        pass
+        print(result)
+
+    except Exception as e:
+        print(f"ERROR inserting article: {article['title']}")
+        print(str(e))
 
 
 def process_feed(feed_name, feed_url):
     feed = feedparser.parse(feed_url)
 
+    print(f"Feed: {feed_name}")
+    print(f"Entries found: {len(feed.entries)}")
+
+    if feed.bozo:
+        print("Feed parse error:")
+        print(feed.bozo_exception)
+
     for entry in feed.entries:
+        print(f"Processing: {entry.get('title', 'NO TITLE')}")
+
         article = {
             "title": entry.get("title", ""),
             "link": entry.get("link", ""),
