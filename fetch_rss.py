@@ -3,6 +3,7 @@ import feedparser
 from datetime import datetime
 from supabase import create_client
 from dotenv import load_dotenv
+import spacy
 
 load_dotenv()
 
@@ -10,6 +11,7 @@ SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_KEY"]
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+nlp = spacy.load("en_core_web_sm")
 
 RSS_FEEDS = [
     {
@@ -30,28 +32,31 @@ RSS_FEEDS = [
     }
 ]
 
-TREND_KEYWORDS = [
-    "ChatGPT",
-    "Gemini",
-    "Claude",
-    "OpenAI",
-    "Google",
-    "Microsoft",
-    "Nvidia",
-    "IPL",
-    "Virat",
-    "Dhoni",
-    "Rohit",
-    "UPI",
-    "Paytm",
-    "PhonePe",
-    "Blinkit",
-    "Zepto",
-    "Swiggy",
-    "Zomato",
-    "Tesla",
-    "Bitcoin"
-]
+def extract_keywords(text):
+
+    doc = nlp(text)
+
+    unique = {}
+
+    for ent in doc.ents:
+
+        if ent.label_ in [
+            "PERSON",
+            "ORG",
+            "GPE",
+            "EVENT",
+            "PRODUCT"
+        ]:
+
+            unique[ent.text.strip()] = ent.label_
+
+    return [
+        {
+            "keyword": k,
+            "entity_type": v
+        }
+        for k, v in unique.items()
+    ]
 
 def article_exists(link):
     try:
@@ -86,23 +91,13 @@ def extract_image(entry):
 
     return None
 
-def extract_keywords(text):
-
-    matches = []
-
-    for keyword in TREND_KEYWORDS:
-
-        if keyword.lower() in text.lower():
-            matches.append(keyword)
-
-    return matches
-
 def save_trends(keywords, source, article_link):
 
-    for keyword in keywords:
+    for item in keywords:
 
         trend = {
-            "keyword": keyword,
+            "keyword": item["keyword"],
+            "entity_type": item["entity_type"],
             "source": source,
             "article_link": article_link
         }
