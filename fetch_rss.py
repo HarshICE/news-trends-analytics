@@ -30,15 +30,44 @@ RSS_FEEDS = [
     }
 ]
 
-def save_article(article):
+TREND_KEYWORDS = [
+    "ChatGPT",
+    "Gemini",
+    "Claude",
+    "OpenAI",
+    "Google",
+    "Microsoft",
+    "Nvidia",
+    "IPL",
+    "Virat",
+    "Dhoni",
+    "Rohit",
+    "UPI",
+    "Paytm",
+    "PhonePe",
+    "Blinkit",
+    "Zepto",
+    "Swiggy",
+    "Zomato",
+    "Tesla",
+    "Bitcoin"
+]
+
+def article_exists(link):
     try:
-        result = supabase.table("articles").upsert(article,on_conflict="link").execute()
-        print(f"Saved: {article['title']}")
-        print(result)
+        result = (
+            supabase.table("articles")
+            .select("id")
+            .eq("link", link)
+            .limit(1)
+            .execute()
+        )
+
+        return len(result.data) > 0
 
     except Exception as e:
-        print(f"ERROR inserting article: {article['title']}")
-        print(str(e))
+        print("Existence check error:", e)
+        return False
 
 def extract_image(entry):
     # media_thumbnail
@@ -57,47 +86,38 @@ def extract_image(entry):
 
     return None
 
-def detect_category(title):
-    title = title.lower()
+def extract_keywords(text):
 
-    sports = [
-        "cricket", "football", "ipl",
-        "fifa", "tennis", "nba",
-        "match", "sports"
-    ]
+    matches = []
 
-    entertainment = [
-        "movie", "film", "actor",
-        "actress", "bollywood",
-        "hollywood", "music"
-    ]
+    for keyword in TREND_KEYWORDS:
 
-    technology = [
-        "ai", "artificial intelligence",
-        "tech", "software",
-        "google", "microsoft",
-        "apple"
-    ]
+        if keyword.lower() in text.lower():
+            matches.append(keyword)
 
-    business = [
-        "stock", "market",
-        "economy", "business",
-        "startup", "finance"
-    ]
+    return matches
 
-    if any(word in title for word in sports):
-        return "Sports"
+def save_trends(keywords, source, article_link):
 
-    if any(word in title for word in entertainment):
-        return "Entertainment"
+    for keyword in keywords:
 
-    if any(word in title for word in technology):
-        return "Technology"
+        trend = {
+            "keyword": keyword,
+            "source": source,
+            "article_link": article_link
+        }
 
-    if any(word in title for word in business):
-        return "Business"
+        supabase.table("trends").insert(trend).execute()
 
-    return "General"
+def save_article(article):
+    try:
+        result = supabase.table("articles").upsert(article,on_conflict="link").execute()
+        print(f"Saved: {article['title']}")
+        print(result)
+
+    except Exception as e:
+        print(f"ERROR inserting article: {article['title']}")
+        print(str(e))
 
 def process_feed(feed_name, feed_url):
     feed = feedparser.parse(feed_url)
@@ -112,20 +132,36 @@ def process_feed(feed_name, feed_url):
     for entry in feed.entries:
         print(f"Processing: {entry.get('title', 'NO TITLE')}")
 
-        category = detect_category(entry.get("title", ""))
-        image_url = extract_image(entry)
+        title = entry.get("title", "")
+        content = entry.get("summary", "")
+        link = entry.get("link", "")
+
+        if article_exists(link):
+            print(f"Skipping existing article: {title}")
+            continue
         
+        combined_text = (title + " " + content)
+
+        keywords = extract_keywords(combined_text)
+
+        image_url = extract_image(entry)
+
         article = {
-            "title": entry.get("title", ""),
-            "link": entry.get("link", ""),
+            "title": title,
+            "link": link,
             "summary": entry.get("summary", ""),
             "source": feed_name,
-            "category": category,
             "image_url": image_url,
             "published_at": entry.get("published", None)
         }
 
         save_article(article)
+
+        save_trends(
+            keywords,
+            feed_name,
+            link
+        )
 
 
 def main():
