@@ -27,10 +27,6 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Download spaCy model
-        run: |
-          python -m spacy download en_core_web_sm
-
       - name: Run RSS Fetcher
         run: python fetch_rss.py
 
