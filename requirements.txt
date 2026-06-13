@@ -1,5 +1,4 @@
 feedparser
-supabase
 python-dotenv
-requests
-pytrends
+supabase
+spacy
