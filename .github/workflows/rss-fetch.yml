@@ -10,6 +10,10 @@ jobs:
   fetch-rss:
     runs-on: ubuntu-latest
 
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,11 +28,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run RSS Fetcher
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        run: |
-          python fetch_rss.py
+        run: python fetch_rss.py
 
       - name: Run Google Trends
         run: python fetch_google_trends.py
