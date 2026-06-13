@@ -1,69 +1,71 @@
-from pytrends.request import TrendReq
-from supabase import create_client
-from dotenv import load_dotenv
 import os
+import feedparser
+
+from dotenv import load_dotenv
+from supabase import create_client
 
 load_dotenv()
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_KEY"]
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-pytrends = TrendReq(
-    hl='en-US',
-    tz=330
+supabase = create_client(
+    SUPABASE_URL,
+    SUPABASE_KEY
 )
 
-def fetch_trending_searches():
+GOOGLE_TRENDS_RSS = (
+    "https://trends.google.com/trending/rss?geo=IN"
+)
 
-    trends = pytrends.trending_searches(
-        pn='india'
-    )
-
-    return trends
-
-def save_trend(keyword, rank):
+def save_trend(trend):
 
     try:
 
-        row = {
-            "keyword": keyword,
-            "rank": rank
-        }
-
         supabase.table(
             "google_trends"
-        ).upsert(
-            row,
-            on_conflict="keyword,trend_date"
+        ).insert(
+            trend
         ).execute()
 
         print(
-            f"Saved: {keyword}"
+            f"Saved: {trend['trend_name']}"
         )
 
     except Exception as e:
-
-        print(
-            f"Error saving {keyword}"
-        )
 
         print(e)
 
 def process_trends():
 
-    trends = fetch_trending_searches()
+    feed = feedparser.parse(
+        GOOGLE_TRENDS_RSS
+    )
 
-    for index, row in trends.iterrows():
+    print(
+        f"Found {len(feed.entries)} trends"
+    )
 
-        keyword = row[0]
+    
+    for entry in feed.entries:
 
-        save_trend(
-            keyword,
-            index + 1
-        )
+        trend = {
+            "trend_name": entry.get("title"),
 
+            "traffic": entry.get("ht_approx_traffic"),
+
+            "image_url": entry.get("ht_picture"),
+
+            "news_title": entry.get("ht_news_item_title"),
+
+            "news_source": entry.get("ht_news_item_source"),
+
+            "news_url": entry.get("ht_news_item_url"),
+
+            "published_at": entry.get("published")
+        }
+
+        save_trend(trend)
 
 def main():
 
