@@ -5,10 +5,10 @@ import os
 
 load_dotenv()
 
-supabase = create_client(
-    os.environ["SUPABASE_URL"],
-    os.environ["SUPABASE_KEY"]
-)
+SUPABASE_URL = os.environ["SUPABASE_URL"]
+SUPABASE_KEY = os.environ["SUPABASE_KEY"]
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 pytrends = TrendReq(
     hl='en-US',
@@ -34,7 +34,10 @@ def save_trend(keyword, rank):
 
         supabase.table(
             "google_trends"
-        ).insert(row).execute()
+        ).upsert(
+            row,
+            on_conflict="keyword,trend_date"
+        ).execute()
 
         print(
             f"Saved: {keyword}"
