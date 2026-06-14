@@ -241,7 +241,6 @@ http://localhost:3000
 
 ### Add GitHub Actions Section
 
-```md
 ## Automation Workflow
 
 GitHub Actions automatically executes:
@@ -252,11 +251,8 @@ GitHub Actions automatically executes:
 4. Supabase Data Storage
 
 Schedule:
-```
 
-```text
 Every Hour
-```
 ---
 
 ## Future Enhancements
