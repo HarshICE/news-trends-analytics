@@ -38,8 +38,14 @@ The processed data is then displayed through a modern analytics dashboard built 
 
 - Total Articles
 - Total Trends
+- Google Trends Count
 - Top Keywords
-- Trend Analytics
+- Top People
+- Top Organizations
+- Top News Sources
+- Article Search
+- Latest News Feed
+- Publication Dates
 - Real-time updates
 
 ---
@@ -47,7 +53,7 @@ The processed data is then displayed through a modern analytics dashboard built 
 ## Architecture
 
 ```text
-RSS Feeds
+RSS Feeds + Google Trends
      │
      ▼
 Python ETL Pipeline
@@ -64,6 +70,18 @@ Next.js Dashboard
      ▼
 Analytics & Visualizations
 ```
+
+---
+
+## Key Highlights
+
+- Built an automated news analytics pipeline using Python and NLP.
+- Processed 1,000+ news articles from multiple sources.
+- Extracted entities using spaCy Named Entity Recognition (NER).
+- Automated hourly ETL jobs using GitHub Actions.
+- Stored analytics data in Supabase PostgreSQL.
+- Built an interactive analytics dashboard using Next.js and Recharts.
+- Implemented article search and trend visualization features.
 
 ---
 
@@ -131,9 +149,42 @@ Analytics & Visualizations
 
 ## Screenshots
 
-### Dashboard
+### Analytics Dashboard
 
-![Dashboard](news-dashboard/public/screenshots/dashboard.png)
+![Analytics Dashboard](news-dashboard/public/screenshots/dashboard.png)
+
+Features shown:
+
+- Top Keywords
+- Top People
+- Top Organizations
+- Top News Sources
+- Article Search
+- Latest News Feed
+
+---
+
+## Project Structure
+
+```text
+news-trends-analytics/
+│
+├── fetch_rss.py
+├── fetch_google_trends.py
+├── requirements.txt
+│
+├── .github/
+│   └── workflows/
+│       └── rss-fetcher.yml
+│
+├── news-dashboard/
+│   ├── app/
+│   ├── components/
+│   ├── lib/
+│   └── public/
+│
+└── README.md
+```
 
 ---
 
@@ -188,41 +239,35 @@ http://localhost:3000
 
 ---
 
-## Automation
+### Add GitHub Actions Section
 
-The ETL pipeline runs automatically using GitHub Actions.
+```md
+## Automation Workflow
+
+GitHub Actions automatically executes:
+
+1. RSS Feed Collection
+2. Google Trends Collection
+3. NLP Entity Extraction
+4. Supabase Data Storage
 
 Schedule:
 
 ```text
 Every Hour
 ```
-
-Workflow:
-
-```text
-RSS Feeds
-      ↓
-Python ETL
-      ↓
-Entity Extraction
-      ↓
-Supabase
-      ↓
-Dashboard Update
-```
-
 ---
 
 ## Future Enhancements
 
 - Sentiment Analysis
-- Top People Dashboard
-- Top Organizations Dashboard
+- Topic Classification
 - Trend Forecasting
 - Historical Trend Analysis
 - Real-time Alerts
-- API Layer
+- REST API Layer
+- Dashboard Filters
+- Keyword Comparison Analytics
 
 ---
 
