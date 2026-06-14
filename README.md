@@ -252,7 +252,6 @@ GitHub Actions automatically executes:
 4. Supabase Data Storage
 
 Schedule:
-```text
 Every Hour
 ```
 ---
