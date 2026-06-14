@@ -32,23 +32,56 @@ RSS_FEEDS = [
     }
 ]
 
+STOP_KEYWORDS = {
+    "india",
+    "indian",
+    "us",
+    "u.s.",
+    "united states",
+    "delhi",
+    "army",
+    "government",
+    "congress",
+    "police",
+    "court",
+    "minister",
+    "state",
+    "states",
+    "country",
+    "district",
+    "city"
+}
+
 def extract_keywords(text):
 
     doc = nlp(text)
 
     unique = {}
 
+    allowed_labels = {
+        "PERSON",
+        "ORG",
+        "EVENT",
+        "PRODUCT"
+    }
+
     for ent in doc.ents:
 
-        if ent.label_ in [
-            "PERSON",
-            "ORG",
-            "GPE",
-            "EVENT",
-            "PRODUCT"
-        ]:
+        keyword = ent.text.strip()
 
-            unique[ent.text.strip()] = ent.label_
+        if ent.label_ not in allowed_labels:
+            continue
+
+        if len(keyword) < 4:
+            continue
+
+        if keyword.lower() in STOP_KEYWORDS:
+            continue
+
+        if keyword.isdigit():
+            continue
+
+        unique[keyword] = ent.label_
 
     return [
         {
@@ -93,7 +126,19 @@ def extract_image(entry):
 
 def save_trends(keywords, source, article_link):
 
+    seen = set()
+
     for item in keywords:
+
+        key = (
+            item["keyword"].lower(),
+            article_link
+        )
+
+        if key in seen:
+            continue
+
+        seen.add(key)
 
         trend = {
             "keyword": item["keyword"],
