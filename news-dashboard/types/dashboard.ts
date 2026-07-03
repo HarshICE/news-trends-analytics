@@ -31,3 +31,15 @@ export interface Stats {
   trends: number;
   googleTrends: number;
 }
+
+export interface DashboardData {
+  articleResult: any;
+  trendResult: any;
+  googleTrendResult: any;
+  latestArticles: any;
+  topKeywords: any;
+  peopleCounts: CountItem[];
+  organizationCounts: CountItem[];
+  sourceCounts: CountItem[];
+  uniqueGoogleTrends: GoogleTrend[];
+}
