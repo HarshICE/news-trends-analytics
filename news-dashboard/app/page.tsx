@@ -1,4 +1,7 @@
+export const dynamic = "force-dynamic";
+
 import { supabase } from "@/lib/supabase";
+import RealtimeListener from "@/components/RealtimeListener";
 import StatsCard from "@/components/StatsCard";
 import LatestArticles from "@/components/LatestArticles";
 import TopKeywords from "@/components/TopKeywords";
@@ -6,19 +9,14 @@ import TopPeople from "@/components/TopPeople";
 import TopOrganizations from "@/components/TopOrganizations";
 import TopSources from "@/components/TopSources";
 import SearchArticles from "@/components/SearchArticles";
-type KeywordRow = {
-  keyword: string;
-};
-
-type SourceRow = {
-  source: string;
-};
-
-type CountItem = {
-  keyword?: string;
-  source?: string;
-  count: number;
-};
+import TopGoogleTrends from "@/components/TopGoogleTrends";
+import {
+  Article,
+  KeywordRow,
+  SourceRow,
+  CountItem,
+  GoogleTrend
+} from "@/types/dashboard";
 export default async function Home() {
   
   const [
@@ -29,7 +27,8 @@ export default async function Home() {
       topKeywords,
       peopleRows,
       organizationRows,
-      sourceRows
+      sourceRows,
+      googleTrends
     ] = await Promise.all([
     supabase
       .from("articles")
@@ -59,14 +58,20 @@ export default async function Home() {
     .select("keyword")
     .eq("entity_type", "PERSON"),
 
-  supabase
-    .from("trends")
-    .select("keyword")
-    .eq("entity_type", "ORG"),
+    supabase
+      .from("trends")
+      .select("keyword")
+      .eq("entity_type", "ORG"),
 
-  supabase
-    .from("articles")
-    .select("source") 
+    supabase
+      .from("articles")
+      .select("source"), 
+
+    supabase
+    .from("google_trends")
+    .select("trend_name, traffic")
+    .order("created_at", { ascending: false })
+    .limit(10),
   ]);
 
   const peopleCounts: CountItem[] = Object.values(
@@ -133,8 +138,19 @@ export default async function Home() {
       )
     );
 
+    const uniqueGoogleTrends = Array.from(
+      new Map(
+        (googleTrends.data || []).map((item) => [
+          item.trend_name,
+          item,
+        ])
+      ).values()
+    ).slice(0, 10);
+
   return (
     <main className="p-8 max-w-7xl mx-auto">
+      <RealtimeListener />
+
       <h1 className="text-4xl font-bold mb-8">
         News Analytics Dashboard
       </h1>
@@ -181,10 +197,19 @@ export default async function Home() {
 
       </div>
 
+      {/* Top Google Trends */}
+      <div className="mt-8">
+        <TopGoogleTrends
+          data={uniqueGoogleTrends || []}
+        />
+      </div>
+
       {/* Search Articles */}
-      <SearchArticles
-        articles={latestArticles.data || []}
-      />
+      <div className="mt-8">
+        <SearchArticles
+          articles={latestArticles.data || []}
+        />
+      </div>
 
       {/* Latest News */}
       <h2 className="text-2xl font-bold mb-4">
