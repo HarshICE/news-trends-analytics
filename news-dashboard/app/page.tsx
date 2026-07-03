@@ -26,84 +26,11 @@ export default async function Home() {
   googleTrendResult,
   latestArticles,
   topKeywords,
-  peopleRows,
-  organizationRows,
-  sourceRows,
-  googleTrends,
+  peopleCounts,
+  organizationCounts,
+  sourceCounts,
+  uniqueGoogleTrends,
 } = await getDashboardData();
-
-  const peopleCounts: CountItem[] = Object.values(
-      (peopleRows.data ?? []).reduce<Record<string, CountItem>>(
-        (acc, row: KeywordRow) => {
-          const keyword = row.keyword;
-
-          if (!acc[keyword]) {
-            acc[keyword] = {
-              keyword,
-              count: 0,
-            };
-          }
-
-          acc[keyword].count++;
-
-          return acc;
-        },
-        {}
-      )
-    )
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
-
-  const organizationCounts: CountItem[] = Object.values(
-      (organizationRows.data ?? []).reduce<Record<string, CountItem>>(
-        (acc, row: KeywordRow) => {
-          const keyword = row.keyword;
-
-          if (!acc[keyword]) {
-            acc[keyword] = {
-              keyword,
-              count: 0,
-            };
-          }
-
-          acc[keyword].count++;
-
-          return acc;
-        },
-        {}
-      )
-    )
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
-
-  const sourceCounts: CountItem[] = Object.values(
-      (sourceRows.data ?? []).reduce<Record<string, CountItem>>(
-        (acc, row: SourceRow) => {
-          const source = row.source;
-
-          if (!acc[source]) {
-            acc[source] = {
-              source,
-              count: 0,
-            };
-          }
-
-          acc[source].count++;
-
-          return acc;
-        },
-        {}
-      )
-    );
-
-    const uniqueGoogleTrends = Array.from(
-      new Map(
-        (googleTrends.data || []).map((item) => [
-          item.trend_name,
-          item,
-        ])
-      ).values()
-    ).slice(0, 10);
 
   return (
     <main className="p-8 max-w-7xl mx-auto">
