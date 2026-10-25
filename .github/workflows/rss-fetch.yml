@@ -26,18 +26,32 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --no-cache-dir -r requirements.txt
       
-      - name: Diagnose spaCy dependencies
+      - name: Diagnose spaCy tokenizer
         continue-on-error: true
         run: |
-          python -m pip show preshed cymem murmurhash
+          python -m pip show spacy en-core-web-sm preshed cymem murmurhash
 
           echo "TEST 1: Preshed map"
-          python -c "from preshed.maps import PreshMap; m = PreshMap(); print('PreshMap initialized'); print('Empty map:', list(m)); m[123] = 'test'; print('Stored value:', m[123])"
-          echo "Preshed exit code: $?"
+          if python -c "from preshed.maps import PreshMap; m = PreshMap(); print('Initialized'); m[123] = 456; print('Stored value:', m[123])"; then
+            echo "PRESHED TEST: PASS"
+          else
+            echo "PRESHED TEST: FAIL"
+          fi
 
-          echo "TEST 2: spaCy tokenizer"
-          python -c "import spacy; print('spaCy:', spacy.__version__); nlp = spacy.blank('en'); print('Basic tokenizer works')"
-          echo "Tokenizer exit code: $?"
+          echo "TEST 2: Basic spaCy tokenizer"
+          if python -c "import spacy; print('spaCy:', spacy.__version__); nlp = spacy.blank('en'); print('Basic tokenizer works'); print([t.text for t in nlp('Virat Kohli plays cricket in India')])"; then
+            echo "BLANK TOKENIZER TEST: PASS"
+          else
+            echo "BLANK TOKENIZER TEST: FAIL"
+          fi
+
+          echo "TEST 3: English model"
+          if python -c "import spacy; nlp = spacy.load('en_core_web_sm'); print('English model loaded'); print([(e.text, e.label_) for e in nlp('Virat Kohli plays cricket in India').ents])"; then
+            echo "ENGLISH MODEL TEST: PASS"
+          else
+            echo "ENGLISH MODEL TEST: FAIL"
+          fi
+
 
       - name: Run RSS Fetcher
         run: python fetch_rss.py
