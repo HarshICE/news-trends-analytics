@@ -3,4 +3,5 @@ python-dotenv
 supabase
 click
 spacy==3.7.5
+preshed==3.0.13
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
