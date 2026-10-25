@@ -26,6 +26,14 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+      
+      - name: Diagnose spaCy installation
+        run: |
+          python --version
+          python -m pip show spacy
+          python -m pip show en-core-web-sm
+          python -m pip check
+          python -c "import spacy; import en_core_web_sm; print('spaCy:', spacy.__version__); print('Model:', en_core_web_sm.__version__); print('Loading model...'); nlp = spacy.load('en_core_web_sm'); print('Model loaded successfully')"
 
       - name: Run RSS Fetcher
         run: python fetch_rss.py
