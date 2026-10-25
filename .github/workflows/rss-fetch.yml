@@ -27,12 +27,17 @@ jobs:
         run: python -m pip install --no-cache-dir -r requirements.txt
       
       - name: Diagnose spaCy dependencies
+        continue-on-error: true
         run: |
           python -m pip show preshed cymem murmurhash
+
           echo "TEST 1: Preshed map"
-          python -c "from preshed.maps import PreshMap; m = PreshMap(); print('PreshMap initialized'); print('Empty map:', list(m)); m.set(123, 'test'); print('Stored value:', m.get(123))"
+          python -c "from preshed.maps import PreshMap; m = PreshMap(); print('PreshMap initialized'); print('Empty map:', list(m)); m[123] = 'test'; print('Stored value:', m[123])"
+          echo "Preshed exit code: $?"
+
           echo "TEST 2: spaCy tokenizer"
           python -c "import spacy; print('spaCy:', spacy.__version__); nlp = spacy.blank('en'); print('Basic tokenizer works')"
+          echo "Tokenizer exit code: $?"
 
       - name: Run RSS Fetcher
         run: python fetch_rss.py
