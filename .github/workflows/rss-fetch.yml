@@ -19,16 +19,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
+          uses: actions/setup-python@v5
+          with:
             python-version: "3.12"
-            cache: pip
 
       - name: Install dependencies
         run: python -m pip install --no-cache-dir -r requirements.txt
       
-      - name: Diagnose spaCy installation
-        run: |
+      - name: Test spaCy model
+          run: |
             python --version
             python -m pip show spacy
             python -m pip show en-core-web-sm
